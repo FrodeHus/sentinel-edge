@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace SentinelEdge.Api
 {
@@ -12,6 +13,14 @@ namespace SentinelEdge.Api
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>()
+                    .ConfigureLogging(builder =>
+                    {
+                        builder.AddApplicationInsights();
+                        builder.AddConsole();
+                    });
+                });
     }
 }
