@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +11,7 @@ using SentinelEdge.Api.Services;
 
 namespace SentinelEdge.Api.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Task.Firewall.Read,Task.Firewall.Update")]
     [ApiController]
     [Route("[controller]")]
     public class FirewallController : ControllerBase
@@ -26,7 +28,7 @@ namespace SentinelEdge.Api.Controllers
         [HttpGet("rule")]
         public async Task<ActionResult<IEnumerable<IFirewallRule>>> GetRules()
         {
-            HttpContext.VerifyUserHasAnyAcceptedScope(_scopeRequiredByApi);
+            // HttpContext.VerifyUserHasAnyAcceptedScope(_scopeRequiredByApi);
             var rules = await _firewall.ListRules().ConfigureAwait(false);
             return Ok(rules);
         }
@@ -34,9 +36,24 @@ namespace SentinelEdge.Api.Controllers
         [HttpGet("group")]
         public async Task<ActionResult<IEnumerable<IFirewallGroup>>> GetGroups()
         {
-            HttpContext.VerifyUserHasAnyAcceptedScope(_scopeRequiredByApi);
+            // HttpContext.VerifyUserHasAnyAcceptedScope(_scopeRequiredByApi);
             var groups = await _firewall.ListFirewallGroups().ConfigureAwait(false);
             return Ok(groups);
+        }
+
+        [Authorize(Roles = "Task.Firewall.Update")]
+        [HttpPost("block")]
+        public IActionResult BlockIPs([FromBody] JsonElement data)
+        {
+
+            var entities = JsonSerializer.Deserialize<List<SentinelEntity>>(data.GetProperty("Ips").GetRawText());
+
+            foreach (var entity in entities)
+            {
+                _logger.LogInformation($"-> blocking {entity.Address}");
+            }
+
+            return Ok();
         }
     }
 }
