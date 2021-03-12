@@ -11,7 +11,6 @@ using SentinelEdge.Api.Services;
 using System.Reflection;
 using System.IO;
 using SentinelEdge.Api.HealthChecks;
-using SentinelEdge.Api.Configuration;
 using SentinelEdge.Api.Unifi;
 
 namespace SentinelEdge.Api

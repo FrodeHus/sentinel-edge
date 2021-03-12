@@ -1,6 +1,6 @@
 using System;
 
-namespace SentinelEdge.Api.Configuration
+namespace SentinelEdge.Api.Unifi
 {
     public class UsgConfiguration
     {
