@@ -55,9 +55,33 @@ namespace SentinelEdge.Api.Unifi
         {
             await Authenticate().ConfigureAwait(false);
             var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-            var result = await _client.GetFromJsonAsync<UsgResultSet<IFirewallRule>>(new Uri($"{_config.Url}/api/s/default/rest/firewallrule"), options).ConfigureAwait(false);
+            var result = await _client.GetFromJsonAsync<UsgResultSet<IFirewallRule>>(new Uri($"{_config.Url}/api/s/{_config.SiteName}/rest/firewallrule"), options).ConfigureAwait(false);
             return result.Data.ToList();
+        }
 
+        public async Task<List<IFirewallGroup>> ListFirewallGroups()
+        {
+            await Authenticate().ConfigureAwait(false);
+            var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+            var result = await _client.GetFromJsonAsync<UsgResultSet<IFirewallGroup>>(new Uri($"{_config.Url}/api/s/{_config.SiteName}/rest/firewallgroup"), options).ConfigureAwait(false);
+            return result.Data.ToList();
+        }
+
+        public async Task UpdateFirewallGroup(IFirewallGroup group)
+        {
+            if (group == null)
+            {
+                throw new ArgumentNullException(nameof(group));
+            }
+
+            await Authenticate().ConfigureAwait(false);
+            var result = await _client.PostAsJsonAsync(new Uri($"{_config.Url}/api/s/{_config.SiteName}/rest/firewallgroup/{group.Id}"), group).ConfigureAwait(false);
+            if (!result.IsSuccessStatusCode)
+            {
+                var reason = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
+                _logger.LogError($"Failed updating firewall group {group.Name}: {reason}");
+                result.EnsureSuccessStatusCode();
+            }
         }
     }
 }
