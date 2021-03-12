@@ -1,22 +1,19 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Web.Resource;
 using SentinelEdge.Api.Models;
 using SentinelEdge.Api.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace SentinelEdge.Api.Controllers
 {
-    [Authorize(Roles = "Task.Firewall.Read,Task.Firewall.Update")]
+    [Authorize]
     [ApiController]
     [Route("[controller]")]
     public class FirewallController : ControllerBase
     {
-        private static readonly string[] _scopeRequiredByApi = new string[] { "api://fb900fd0-3383-47dc-8a34-f25643f3b69f/Firewall.Read", "Firewall.Read" };
         private readonly ILogger<FirewallController> _logger;
         private readonly ITalkToFirewall _firewall;
 
@@ -25,34 +22,33 @@ namespace SentinelEdge.Api.Controllers
             _logger = logger;
             _firewall = firewall;
         }
+
         [HttpGet("rule")]
-        public async Task<ActionResult<IEnumerable<IFirewallRule>>> GetRules()
+        public async Task<ActionResult<IEnumerable<FirewallRule>>> GetRules()
         {
-            // HttpContext.VerifyUserHasAnyAcceptedScope(_scopeRequiredByApi);
             var rules = await _firewall.ListRules().ConfigureAwait(false);
             return Ok(rules);
         }
 
         [HttpGet("group")]
-        public async Task<ActionResult<IEnumerable<IFirewallGroup>>> GetGroups()
+        public async Task<ActionResult<IEnumerable<FirewallGroup>>> GetGroups()
         {
-            // HttpContext.VerifyUserHasAnyAcceptedScope(_scopeRequiredByApi);
             var groups = await _firewall.ListFirewallGroups().ConfigureAwait(false);
             return Ok(groups);
         }
 
-        [Authorize(Roles = "Task.Firewall.Update")]
+        [Authorize(Policy = "FirewallAdmin")]
         [HttpPost("block")]
-        public IActionResult BlockIPs([FromBody] JsonElement data)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesDefaultResponseType]
+        public async Task<IActionResult> BlockIPs([FromBody] SentinelIpSet ipSet)
         {
-
-            var entities = JsonSerializer.Deserialize<List<SentinelEntity>>(data.GetProperty("Ips").GetRawText());
-
-            foreach (var entity in entities)
+            if (ipSet == null)
             {
-                _logger.LogInformation($"-> blocking {entity.Address}");
+                return BadRequest("Empty IP set");
             }
-
+            await _firewall.BlockIPs(ipSet.Ips).ConfigureAwait(false);
             return Ok();
         }
     }

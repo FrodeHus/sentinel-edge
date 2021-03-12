@@ -12,6 +12,7 @@ using System.Reflection;
 using System.IO;
 using SentinelEdge.Api.HealthChecks;
 using SentinelEdge.Api.Unifi;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SentinelEdge.Api
 {
@@ -27,8 +28,19 @@ namespace SentinelEdge.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddApplicationInsightsTelemetry();
+            services.AddHttpContextAccessor();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
+            services.AddAuthorization(c =>
+            {
+                c.AddPolicy("FirewallAdmin", o => o.RequireAuthenticatedUser()
+                                                   .RequireRole("Task.Firewall.Update")
+                                                   .Build());
+                c.DefaultPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser()
+                                                                  .RequireRole("Task.Firewall.Read", "Task.Firewall.Update")
+                                                                  .Build();
+                c.FallbackPolicy = c.DefaultPolicy;
+            });
 
             services.AddHealthChecks().AddCheck<UsgHealthCheck>("Firewall health check");
             services.AddOptions();

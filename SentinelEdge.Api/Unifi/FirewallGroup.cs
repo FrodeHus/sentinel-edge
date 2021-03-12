@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using SentinelEdge.Api.Models;
 
-namespace SentinelEdge.Api.Unifi
+namespace SentinelEdge.Api.Models
 {
-    public class FirewallGroup : IFirewallGroup
+    public class FirewallGroup
     {
         [JsonPropertyName("_id")]
         public string Id { get; set; }
