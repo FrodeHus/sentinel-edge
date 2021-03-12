@@ -10,6 +10,7 @@ using System;
 using Microsoft.Extensions.Logging;
 using SentinelEdge.Api.Services;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace SentinelEdge.Api.Tests
 {
@@ -23,7 +24,8 @@ namespace SentinelEdge.Api.Tests
             var httpClient = new HttpClient(new FakeHttpMessageHandler(json, HttpStatusCode.OK)) { BaseAddress = new Uri("https://localhost") };
             httpClientFactory.CreateClient(Arg.Any<string>()).Returns(httpClient);
             var fakeLog = Substitute.For<ILogger<ITalkToFirewall>>();
-            var service = new UnifiFirewallService(new Configuration.UsgConfiguration { Url = new Uri("https://localhost") }, fakeLog, httpClientFactory);
+            var config = Options.Create(new UsgConfiguration { Url = new Uri("https://localhost") });
+            var service = new UnifiFirewallService(config, fakeLog, httpClientFactory);
             var actual = await service.ListFirewallGroups().ConfigureAwait(false);
             actual.Should().HaveCount(1);
             actual.Single().GroupMembers.Should().HaveCount(1);
@@ -37,7 +39,8 @@ namespace SentinelEdge.Api.Tests
             var httpClient = new HttpClient(new FakeHttpMessageHandler(json, HttpStatusCode.OK)) { BaseAddress = new Uri("https://localhost") };
             httpClientFactory.CreateClient(Arg.Any<string>()).Returns(httpClient);
             var fakeLog = Substitute.For<ILogger<ITalkToFirewall>>();
-            var service = new UnifiFirewallService(new Configuration.UsgConfiguration { Url = new Uri("https://localhost") }, fakeLog, httpClientFactory);
+            var config = Options.Create(new UsgConfiguration { Url = new Uri("https://localhost") });
+            var service = new UnifiFirewallService(config, fakeLog, httpClientFactory);
             var actual = await service.ListRules().ConfigureAwait(false);
             actual.Should().HaveCount(1);
         }
