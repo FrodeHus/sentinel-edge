@@ -55,16 +55,16 @@ namespace SentinelEdge.Api.Unifi
         {
             await Authenticate().ConfigureAwait(false);
             var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-            var result = await _client.GetFromJsonAsync<UsgResultSet<IFirewallRule>>(new Uri($"{_config.Url}/api/s/{_config.SiteName}/rest/firewallrule"), options).ConfigureAwait(false);
-            return result.Data.ToList();
+            var result = await _client.GetFromJsonAsync<UsgResultSet<FirewallRule>>(new Uri($"{_config.Url}/api/s/{_config.SiteName}/rest/firewallrule"), options).ConfigureAwait(false);
+            return result.Data.Cast<IFirewallRule>().ToList();
         }
 
         public async Task<List<IFirewallGroup>> ListFirewallGroups()
         {
             await Authenticate().ConfigureAwait(false);
             var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-            var result = await _client.GetFromJsonAsync<UsgResultSet<IFirewallGroup>>(new Uri($"{_config.Url}/api/s/{_config.SiteName}/rest/firewallgroup"), options).ConfigureAwait(false);
-            return result.Data.ToList();
+            var result = await _client.GetFromJsonAsync<UsgResultSet<FirewallGroup>>(new Uri($"{_config.Url}/api/s/{_config.SiteName}/rest/firewallgroup"), options).ConfigureAwait(false);
+            return result.Data.Cast<IFirewallGroup>().ToList();
         }
 
         public async Task UpdateFirewallGroup(IFirewallGroup group)
