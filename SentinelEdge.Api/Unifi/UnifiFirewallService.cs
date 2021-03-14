@@ -83,7 +83,7 @@ namespace SentinelEdge.Api.Unifi
             _telemetryClient.TrackEvent(
                 "FIREWALL_UPDATE",
                 new Dictionary<string, string>{
-                    {"User", _contextAccessor.HttpContext.User.Identity.Name},
+                    {"UserObjectId", _contextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value},
                     {"Roles", _contextAccessor.HttpContext.User.Claims.Where(c => c.Type == ClaimTypes.Role).Aggregate(string.Empty, (current, next) => current + next.Value + ",")}
                 }, new Dictionary<string, double>{
                     {"IncomingIpCount", ips.Count},
